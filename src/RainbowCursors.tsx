@@ -8,18 +8,17 @@ const GRID_COLS = 10
 const SHAPE_SIZE = 40
 const SHAPE_SPACING = 50
 
-// Rainbow colors for each cursor in the trail, plus the real mouse
 const RAINBOW_COLORS: TLDefaultColorStyle[] = [
 	'light-red',     
-	'red',           // Cursor 1
-	'orange',        // Cursor 2
-	'yellow',        // Cursor 3
-	'light-green',   // Cursor 4
-	'green',         // Cursor 5
-	'light-blue',    // Cursor 6
-	'blue',          // Cursor 7
-	'violet',        // Cursor 8
-	'light-violet'   // Cursor 9
+	'red',           
+	'orange',        
+	'yellow',        
+	'light-green',   
+	'green',         
+	'light-blue',    
+	'blue',          
+	'violet',        
+	'light-violet'   
 ]
 
 export default function RainbowCursors() {
@@ -36,6 +35,7 @@ export default function RainbowCursors() {
 		})
 	})
 	const [isMouseInCanvas, setIsMouseInCanvas] = useState(false)
+	const [isFadingOut, setIsFadingOut] = useState(false)
 	const mousePosition = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
 	const animationFrameId = useRef<number>()
 	const editorRef = useRef<Editor | null>(null)
@@ -153,7 +153,7 @@ export default function RainbowCursors() {
 				// Mouse not in canvas - set all shapes to grey
 				if (editorRef.current && shapeIdsRef.current.length > 0) {
 					shapeIdsRef.current.forEach(shapeId => {
-						const shape = editorRef.current!.getShape(shapeId)
+						const shape = editorRef.current!.getShape(shapeId)  
 						if (shape && shape.type === 'geo') {
 							const currentColor = (shape.props as any).color as TLDefaultColorStyle
 							if (currentColor !== 'grey') {
@@ -184,12 +184,20 @@ export default function RainbowCursors() {
 		}
 	}, [isMouseInCanvas])
 
+	const handleMouseLeave = () => {
+		setIsMouseInCanvas(false)
+		setIsFadingOut(true)
+		setTimeout(() => setIsFadingOut(false), 400) // Match animation duration
+	}
+
+	const shouldShowCursors = isMouseInCanvas || isFadingOut
+
 	return (
 		<div 
 			ref={containerRef} 
 			style={{ position: 'relative', width: '100%', height: '100%' }}
 			onMouseEnter={() => setIsMouseInCanvas(true)}
-			onMouseLeave={() => setIsMouseInCanvas(false)}
+			onMouseLeave={handleMouseLeave}
 		>
 			<Tldraw 
                 hideUi
@@ -229,7 +237,7 @@ export default function RainbowCursors() {
 					editor.setCameraOptions({ isLocked: true })
 				}}
 			/>
-			{isMouseInCanvas && cursorPositions.map((pos, index) => (
+			{shouldShowCursors && cursorPositions.map((pos, index) => (
 				<img
 					key={index}
 					src="/assets/mac-cursor-6.png"
@@ -241,9 +249,12 @@ export default function RainbowCursors() {
 						width: '14px',
 						height: '20px',
 						pointerEvents: 'none',
-						zIndex: 9999 - index, // Stack in order
-						transform: 'translate(-2px, -2px)', // Adjust offset so tip is at cursor position
-						opacity: 1 - index * 0.08, // Gradually fade the trailing cursors
+						zIndex: 9999 - index,
+						transform: isFadingOut 
+							? 'translate(-2px, -2px) scale(0)' 
+							: 'translate(-2px, -2px) scale(1)',
+						opacity: isFadingOut ? 0 : 1 - index * 0.08,
+						transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
 					}}
 				/>
 			))}
