@@ -1,0 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap');
+@import url('tldraw/tldraw.css');
+
+body {
+	font-family: 'Geist Mono', 'Inter', sans-serif;
+	overscroll-behavior: none;
+}
+
+html {
+	background-color: #f8f9fa;
+  }
+
