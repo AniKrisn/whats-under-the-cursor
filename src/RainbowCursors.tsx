@@ -10,7 +10,7 @@ const SHAPE_SPACING = 50
 
 // Rainbow colors for each cursor in the trail, plus the real mouse
 const RAINBOW_COLORS: TLDefaultColorStyle[] = [
-	'light-red',     // Real mouse cursor
+	'light-red',     
 	'red',           // Cursor 1
 	'orange',        // Cursor 2
 	'yellow',        // Cursor 3
@@ -82,68 +82,66 @@ export default function RainbowCursors() {
 						}
 					}
 
-					// Check collision with all shapes using real mouse + all cursor images
+					// Check collision with all shapes
 					if (editorRef.current && shapeIdsRef.current.length > 0) {
-					// For each shape, check which cursor (if any) is inside it
-					shapeIdsRef.current.forEach(shapeId => {
-						const shape = editorRef.current!.getShape(shapeId)
-						if (shape && shape.type === 'geo') {
-							const shapeBounds = editorRef.current!.getShapePageBounds(shape)
-							if (shapeBounds) {
-								// Check real mouse first, then all cursor images
-								let cursorIndex = -1
-								
-								// Check real mouse position
-								const realMousePagePoint = editorRef.current!.screenToPage({ 
-									x: mousePosition.current.x, 
-									y: mousePosition.current.y 
-								})
-								
-								const realMouseInside = 
-									realMousePagePoint.x >= shapeBounds.x &&
-									realMousePagePoint.x <= shapeBounds.x + shapeBounds.w &&
-									realMousePagePoint.y >= shapeBounds.y &&
-									realMousePagePoint.y <= shapeBounds.y + shapeBounds.h
-								
-								if (realMouseInside) {
-									cursorIndex = 0 // Real mouse uses index 0
-								} else {
-									// Check all cursor images
-									for (let i = 0; i < NUM_CURSORS; i++) {
-										const pagePoint = editorRef.current!.screenToPage({ 
-											x: newPositions[i].x, 
-											y: newPositions[i].y 
-										})
-										
-										const isInside = 
-											pagePoint.x >= shapeBounds.x &&
-											pagePoint.x <= shapeBounds.x + shapeBounds.w &&
-											pagePoint.y >= shapeBounds.y &&
-											pagePoint.y <= shapeBounds.y + shapeBounds.h
-										
-										if (isInside) {
-											cursorIndex = i + 1 // Offset by 1 for cursor images
-											break // Use the first (lead) cursor's color
+						shapeIdsRef.current.forEach(shapeId => {
+							const shape = editorRef.current!.getShape(shapeId)
+							if (shape && shape.type === 'geo') {
+								const shapeBounds = editorRef.current!.getShapePageBounds(shape)
+								if (shapeBounds) {
+									let cursorIndex = -1
+									
+									// Check real mouse position
+									const realMousePagePoint = editorRef.current!.screenToPage({ 
+										x: mousePosition.current.x, 
+										y: mousePosition.current.y 
+									})
+									
+									const realMouseInside = 
+										realMousePagePoint.x >= shapeBounds.x &&
+										realMousePagePoint.x <= shapeBounds.x + shapeBounds.w &&
+										realMousePagePoint.y >= shapeBounds.y &&
+										realMousePagePoint.y <= shapeBounds.y + shapeBounds.h
+									
+									if (realMouseInside) {
+										cursorIndex = 0
+									} else {
+										// Check all cursor images
+										for (let i = 0; i < NUM_CURSORS; i++) {
+											const pagePoint = editorRef.current!.screenToPage({ 
+												x: newPositions[i].x, 
+												y: newPositions[i].y 
+											})
+											
+											const isInside = 
+												pagePoint.x >= shapeBounds.x &&
+												pagePoint.x <= shapeBounds.x + shapeBounds.w &&
+												pagePoint.y >= shapeBounds.y &&
+												pagePoint.y <= shapeBounds.y + shapeBounds.h
+											
+											if (isInside) {
+												cursorIndex = i + 1
+												break
+											}
 										}
 									}
-								}
 
-								// Change shape color based on which cursor touched it
-								const currentColor = (shape.props as any).color as TLDefaultColorStyle
-								if (cursorIndex >= 0) {
-									const newColor = RAINBOW_COLORS[cursorIndex]
-									if (currentColor !== newColor) {
+									// Update color
+									const currentColor = (shape.props as any).color as TLDefaultColorStyle
+									if (cursorIndex >= 0) {
+										const newColor = RAINBOW_COLORS[cursorIndex]
+										if (currentColor !== newColor) {
+											editorRef.current!.updateShape({
+												...shape,
+												props: { ...(shape.props as any), color: newColor }
+											})
+										}
+									} else if (currentColor !== 'grey') {
 										editorRef.current!.updateShape({
 											...shape,
-											props: { ...(shape.props as any), color: newColor }
+											props: { ...(shape.props as any), color: 'grey' }
 										})
 									}
-								} else if (currentColor !== 'grey') {
-									editorRef.current!.updateShape({
-										...shape,
-										props: { ...(shape.props as any), color: 'grey' }
-									})
-								}
 								}
 							}
 						})
@@ -151,6 +149,22 @@ export default function RainbowCursors() {
 					
 					return newPositions
 				})
+			} else {
+				// Mouse not in canvas - set all shapes to grey
+				if (editorRef.current && shapeIdsRef.current.length > 0) {
+					shapeIdsRef.current.forEach(shapeId => {
+						const shape = editorRef.current!.getShape(shapeId)
+						if (shape && shape.type === 'geo') {
+							const currentColor = (shape.props as any).color as TLDefaultColorStyle
+							if (currentColor !== 'grey') {
+								editorRef.current!.updateShape({
+									...shape,
+									props: { ...(shape.props as any), color: 'grey' }
+								})
+							}
+						}
+					})
+				}
 			}
 			
 			animationFrameId.current = requestAnimationFrame(animate)
