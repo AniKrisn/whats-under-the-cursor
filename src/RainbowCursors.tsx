@@ -23,10 +23,20 @@ const RAINBOW_COLORS: TLDefaultColorStyle[] = [
 ]
 
 export default function RainbowCursors() {
-	const [cursorPositions, setCursorPositions] = useState(
-		Array(NUM_CURSORS).fill({ x: 0, y: 0 })
-	)
-	const mousePosition = useRef({ x: 0, y: 0 })
+	const [cursorPositions, setCursorPositions] = useState(() => {
+		const centerX = window.innerWidth / 2 
+		const centerY = window.innerHeight / 2 + 80
+		const radius = 250
+		return Array.from({ length: NUM_CURSORS }, (_, i) => {
+			const angle = (i / NUM_CURSORS) * Math.PI * 1.3
+			return {
+				x: centerX + Math.cos(angle) * radius,
+				y: centerY + Math.sin(angle) * radius
+			}
+		})
+	})
+	const [isMouseInCanvas, setIsMouseInCanvas] = useState(false)
+	const mousePosition = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
 	const animationFrameId = useRef<number>()
 	const editorRef = useRef<Editor | null>(null)
 	const shapeIdsRef = useRef<TLShapeId[]>([])
@@ -49,29 +59,31 @@ export default function RainbowCursors() {
 		}
 
 		const animate = () => {
-			setCursorPositions((prevPositions) => {
-				const newPositions = [...prevPositions]
-				
-				// Each cursor follows the previous one (or the mouse for the first one)
-				for (let i = 0; i < NUM_CURSORS; i++) {
-					const target = i === 0 ? mousePosition.current : newPositions[i - 1]
-					const current = prevPositions[i]
+			// Only update positions if mouse is in canvas
+			if (isMouseInCanvas) {
+				setCursorPositions((prevPositions) => {
+					const newPositions = [...prevPositions]
 					
-					const dx = target.x - current.x
-					const dy = target.y - current.y
-					
-					// Each cursor has progressively more lag
-					const baseLerp = 0.075
-					const lerp = baseLerp * (1 - i * 0.1) // Each subsequent cursor is slower
-					
-					newPositions[i] = {
-						x: current.x + dx * lerp,
-						y: current.y + dy * lerp,
+					// Each cursor follows the previous one (or the mouse for the first one)
+					for (let i = 0; i < NUM_CURSORS; i++) {
+						const target = i === 0 ? mousePosition.current : newPositions[i - 1]
+						const current = prevPositions[i]
+						
+						const dx = target.x - current.x
+						const dy = target.y - current.y
+						
+						// Each cursor has progressively more lag
+						const baseLerp = 0.075
+						const lerp = baseLerp * (1 - i * 0.1) // Each subsequent cursor is slower
+						
+						newPositions[i] = {
+							x: current.x + dx * lerp,
+							y: current.y + dy * lerp,
+						}
 					}
-				}
 
-				// Check collision with all shapes using real mouse + all cursor images
-				if (editorRef.current && shapeIdsRef.current.length > 0) {
+					// Check collision with all shapes using real mouse + all cursor images
+					if (editorRef.current && shapeIdsRef.current.length > 0) {
 					// For each shape, check which cursor (if any) is inside it
 					shapeIdsRef.current.forEach(shapeId => {
 						const shape = editorRef.current!.getShape(shapeId)
@@ -132,13 +144,14 @@ export default function RainbowCursors() {
 										props: { ...(shape.props as any), color: 'grey' }
 									})
 								}
+								}
 							}
-						}
-					})
-				}
-				
-				return newPositions
-			})
+						})
+					}
+					
+					return newPositions
+				})
+			}
 			
 			animationFrameId.current = requestAnimationFrame(animate)
 		}
@@ -155,10 +168,15 @@ export default function RainbowCursors() {
 				cancelAnimationFrame(animationFrameId.current)
 			}
 		}
-	}, [])
+	}, [isMouseInCanvas])
 
 	return (
-		<div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%' }}>
+		<div 
+			ref={containerRef} 
+			style={{ position: 'relative', width: '100%', height: '100%' }}
+			onMouseEnter={() => setIsMouseInCanvas(true)}
+			onMouseLeave={() => setIsMouseInCanvas(false)}
+		>
 			<Tldraw 
                 hideUi
                 autoFocus={false}
@@ -197,7 +215,7 @@ export default function RainbowCursors() {
 					editor.setCameraOptions({ isLocked: true })
 				}}
 			/>
-			{cursorPositions.map((pos, index) => (
+			{isMouseInCanvas && cursorPositions.map((pos, index) => (
 				<img
 					key={index}
 					src="/assets/mac-cursor-6.png"
