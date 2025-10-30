@@ -1,4 +1,4 @@
-import { Tldraw, Editor, createShapeId, TLGeoShape } from 'tldraw'
+import { Tldraw, Editor } from 'tldraw'
 import 'tldraw/tldraw.css'
 import React, { useRef, useEffect } from 'react'
 
@@ -8,26 +8,6 @@ declare global {
 		tldrawDebugGeometry?: boolean
 	}
 }
-
-const SHAPE_TYPES: TLGeoShape['props']['geo'][] = [
-	'rectangle',
-	'ellipse',
-	'triangle',
-	'diamond',
-	'pentagon',
-	'hexagon',
-	'octagon',
-	'star',
-	'rhombus',
-	'oval',
-	'trapezoid',
-	'arrow-right',
-	'arrow-left',
-	'arrow-up',
-	'arrow-down',
-]
-
-const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'violet', 'grey']
 
 export default function DebugGeometry() {
 	const editorRef = useRef<Editor | null>(null)
@@ -40,6 +20,56 @@ export default function DebugGeometry() {
 			window.tldrawDebugGeometry = isHovered
 		}
 	}, [isHovered])
+
+	const loadInitialShapes = (editor: Editor) => {
+		fetch('/assets/for-debug.tldr')
+			.then((response) => response.json())
+			.then((content) => {
+				content.records.forEach((record: any) => {
+					if (record.typeName !== 'shape') return
+
+					const shapeData: any = {
+						type: record.type,
+						x: record.x,
+						y: record.y,
+						props: { ...record.props },
+					}
+
+					if (record.rotation) {
+						shapeData.rotation = record.rotation
+					}
+
+					if (record.opacity) {
+						shapeData.opacity = record.opacity
+					}
+
+					if (record.type === 'text') {
+						const text = record.props.richText?.content?.[0]?.content?.[0]?.text || ''
+						shapeData.props.richText = {
+							type: 'doc',
+							content: [
+								{
+									type: 'paragraph',
+									content: [{ type: 'text', text }],
+								},
+							],
+						}
+					}
+
+					if (record.type === 'draw') {
+						shapeData.props.segments = record.props.segments || []
+					}
+
+					editor.createShape(shapeData)
+				})
+
+				// Zoom to fit all content after loading
+				setTimeout(() => {
+					editor.zoomToFit({ animation: { duration: 0 } })
+				}, 100)
+			})
+			.catch((err) => console.error('Failed to load shapes:', err))
+	}
 
 	return (
 		<div 
@@ -59,44 +89,8 @@ export default function DebugGeometry() {
 						isDebugMode: true,
 					})
 
-					// Create a variety of shapes with different types, sizes, and positions
-					const shapes = []
-					
-					// Create 20 shapes with erratic placement
-					for (let i = 0; i < 20; i++) {
-						const shapeType = SHAPE_TYPES[Math.floor(Math.random() * SHAPE_TYPES.length)]
-						const color = COLORS[Math.floor(Math.random() * COLORS.length)]
-						
-						// Random size between 40 and 150
-						const width = 40 + Math.random() * 110
-						const height = 40 + Math.random() * 110
-						
-						// Erratic placement in a larger area
-						const x = 50 + Math.random() * 800
-						const y = 50 + Math.random() * 500
-						
-						const shapeId = createShapeId(`shape-${i}`)
-						
-						editor.createShape({
-							id: shapeId,
-							type: 'geo',
-							x,
-							y,
-							props: {
-								geo: shapeType,
-								w: width,
-								h: height,
-								color: color as any,
-								fill: Math.random() > 0.5 ? 'solid' : 'semi',
-								dash: Math.random() > 0.7 ? 'dashed' : 'draw',
-							},
-						})
-						
-						shapes.push(shapeId)
-					}
-
-					// Zoom to fit all shapes
-					editor.zoomToFit()
+					// Load shapes from the file
+					loadInitialShapes(editor)
 				}}
 			/>
 		</div>
