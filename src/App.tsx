@@ -1,5 +1,6 @@
 import RainbowCursors from './RainbowCursors'
 import PlayfulShapes from './PlayfulShapes'
+import DebugGeometry from './DebugGeometry'
 
 function App() {
 	return (
@@ -27,8 +28,7 @@ function App() {
 				In a canvas application, getting hit-testing right is important.
 			</p>
 
-			<br />
-			<h2>Hit-testing in the browser</h2>
+			<h3>Hit-testing in the browser</h3>
 
 			<p>
 			For an application on the web, hit-testing is the process of figuring out which element on a page is under the pointer.
@@ -54,10 +54,12 @@ function App() {
 			<p>
 			For regular HTML elements like divs, buttons and links, the browser hit-tests against the entire content or border box,
 			so the whole visual area responds to clicks. There are also ways of going around this. For example, clipped regions don’t
-			register pointer events. Below is an example of a dog-eared close button on our internal company dashboard. The svg path
-			of the button’s parent div is clipped, so the button itself gets clipped too. The browser has a built-in method for
-			hit-testing HTML/SVG elements via &lt;document.elementFromPoint(x, y)&gt; API.
+			register pointer events. Below is an example... 
 			</p>
+
+			<div style={{ height: '600px', margin: '40px 0', position: 'relative' }}>
+				<DebugGeometry />
+			</div>
 
 		</div>
 	)

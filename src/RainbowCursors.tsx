@@ -233,15 +233,15 @@ export default function RainbowCursors() {
 					
 					shapeIdsRef.current = shapeIds
 
-                    // editor.zoomToFit()
-					// Position camera to align grid to the left
-					const gridHeight = GRID_ROWS * SHAPE_SPACING
-					const viewportBounds = editor.getViewportPageBounds()
+                    editor.zoomToFit()
+					// // Position camera to align grid to the left
+					// const gridHeight = GRID_ROWS * SHAPE_SPACING
+					// const viewportBounds = editor.getViewportPageBounds()
 					
-					// Calculate zoom to fit height
-					const heightZoom = viewportBounds.height / (gridHeight + 100) // Add padding
-					editor.setCamera({ x: -95, y: -(gridHeight / 2 + startY - viewportBounds.height / 2), z: heightZoom })
-					editor.setCameraOptions({ isLocked: true })
+					// // Calculate zoom to fit height
+					// const heightZoom = viewportBounds.height / (gridHeight + 100) // Add padding
+					// editor.setCamera({ x: 0, y: -(gridHeight / 2 + startY - viewportBounds.height / 2), z: heightZoom })
+					// editor.setCameraOptions({ isLocked: true })
 				}}
 			/>
 			{shouldShowCursors && cursorPositions.map((pos, index) => (
