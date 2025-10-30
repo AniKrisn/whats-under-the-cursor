@@ -1,6 +1,7 @@
 import RainbowCursors from './RainbowCursors'
 import PlayfulShapes from './PlayfulShapes'
 import DebugGeometry from './DebugGeometry'
+import ClipCorner from './ClipCorner'
 
 function App() {
 	return (
@@ -57,9 +58,37 @@ function App() {
 			register pointer events. Below is an example... 
 			</p>
 
+			{/* <div style={{ margin: '40px 0', position: 'relative' }}>
+				<ClipCorner />
+			</div> */}
+
+			<h3>
+				Hit-testing in the current implementation
+			</h3>
+
+			<p>
+				This also made it possible to build a geometry debugging mode...
+			</p>
+
 			<div style={{ height: '600px', margin: '40px 0', position: 'relative' }}>
 				<DebugGeometry />
 			</div>
+
+			<p>
+			<b>Red lines</b> trace (1) the shape's perimeter and (2) the bounding box inside the polygon.
+			</p>
+
+			<p>
+			<b>Green-Blue dots</b> illustrate the the vertices of the shape. These are the points that define the geometrical bounds, with color indicating their ordering (green first, blue last).
+			</p>
+
+			<p>
+			<b>Dodger Blue lines</b> illustrate the distance to the nearest point on the shape's outline when the cursor is <i>outside</i> the shape (within 150px).
+			</p>
+
+			<p>
+			<b>Goldenrod lines</b> illustrate the distance to the nearest point on the shape's outline when the cursor is <i>inside</i> the shape (within 150px).
+			</p>
 
 		</div>
 	)
