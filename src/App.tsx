@@ -1,9 +1,11 @@
 import RainbowCursors from './RainbowCursors'
+import PlayfulShapes from './PlayfulShapes'
 
 function App() {
 	return (
-		<div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', marginTop: '50px' }}>
-			<h2>What's under the cursor?</h2>
+		<div style={{ maxWidth: '700px', margin: '0 auto', padding: '20px', marginTop: '50px' }}>
+			<PlayfulShapes />
+			<div className='header'>What's under the cursor?</div>
 			
 			<p>
 				Check out these circles. Are they under the cursor(s)?
@@ -26,7 +28,7 @@ function App() {
 			</p>
 
 			<br />
-			<h3>Hit-testing in the browser</h3>
+			<h2>Hit-testing in the browser</h2>
 
 			<p>
 			For an application on the web, hit-testing is the process of figuring out which element on a page is under the pointer.

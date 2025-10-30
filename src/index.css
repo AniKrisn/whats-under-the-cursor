@@ -1,12 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Geist+Mono:wght@100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 @import url('tldraw/tldraw.css');
 
 body {
-	font-family: 'Geist Mono', 'Inter', sans-serif;
+	font-family: 'Fira Sans', 'Open Sans', sans-serif;
 	overscroll-behavior: none;
 }
 
 html {
 	background-color: #f8f9fa;
-  }
+	font-size: 19px;
+	line-height: 1.7;
+}
 
+.header {
+	font-weight: bold;
+	font-size: 42px;
+	margin-top: 18px;
+}
