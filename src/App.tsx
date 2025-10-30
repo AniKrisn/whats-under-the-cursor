@@ -26,7 +26,7 @@ function App() {
 			</p>
 
 			<p>
-			In a canvas application, getting hit-testing right is important. In tldraw, the hit-testing mechanism has had a few exciting updates over time. We’ll explore that journey in this post.
+			In a canvas application, getting hit-testing right is important. In tldraw, the hit-testing mechanism has changed quite a bit over time. We’ll explore that journey in this post.
 			</p>
 
 			<h3>Hit-testing in the browser</h3>
