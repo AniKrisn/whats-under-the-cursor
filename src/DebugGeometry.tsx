@@ -1,6 +1,6 @@
 import { Tldraw, Editor, createShapeId, TLGeoShape } from 'tldraw'
 import 'tldraw/tldraw.css'
-import { useRef, useEffect } from 'react'
+import React, { useRef, useEffect } from 'react'
 
 // Access debugFlags from the global window object
 declare global {
@@ -31,23 +31,23 @@ const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'violet', 'grey']
 
 export default function DebugGeometry() {
 	const editorRef = useRef<Editor | null>(null)
+	const containerRef = useRef<HTMLDivElement>(null)
+	const [isHovered, setIsHovered] = React.useState(false)
 
 	useEffect(() => {
-		// Enable debug geometry via window property
+		// Only enable debug geometry when this specific canvas is hovered
 		if (typeof window !== 'undefined') {
-			window.tldrawDebugGeometry = true
+			window.tldrawDebugGeometry = isHovered
 		}
-		
-		return () => {
-			// Clean up - disable debug geometry when component unmounts
-			if (typeof window !== 'undefined') {
-				window.tldrawDebugGeometry = false
-			}
-		}
-	}, [])
+	}, [isHovered])
 
 	return (
-		<div style={{ position: 'relative', width: '100%', height: '100%' }}>
+		<div 
+			ref={containerRef}
+			style={{ position: 'relative', width: '100%', height: '100%' }}
+			onMouseEnter={() => setIsHovered(true)}
+			onMouseLeave={() => setIsHovered(false)}
+		>
 			<Tldraw 
 				hideUi
 				autoFocus={false}
