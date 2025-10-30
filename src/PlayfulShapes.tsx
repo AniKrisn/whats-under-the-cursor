@@ -9,6 +9,7 @@ interface ShapeConfig {
 const shapes: ShapeConfig[] = [
 	{ src: '/assets/rectangle.png', size: 70, offset: 0.5 },
 	{ src: '/assets/triangle.png', size: 80, offset: 1 },
+    { src: '/assets/diamond.png', size: 75, offset: 1.5 },
 ]
 
 export default function PlayfulShapes() {
@@ -102,8 +103,8 @@ export default function PlayfulShapes() {
 		const phase = Math.min(Math.floor(time / 60 * 5), 6)
 		const baseStyle = {
 			position: 'fixed' as const,
-			width: '75px',
-			height: '75px',
+			width: '35px',
+			height: '35px',
 			pointerEvents: 'none' as const,
 			zIndex: 10000,
 			transition: 'all 1.5s cubic-bezier(0.45, 0.05, 0.55, 0.95)',
@@ -125,6 +126,60 @@ export default function PlayfulShapes() {
 		}
 	}
 
+	const getCloudStyle = () => {
+		const phase = Math.min(Math.floor((time + 0.3) / 60 * 5), 6)
+		const baseStyle = {
+			position: 'fixed' as const,
+			width: '90px',
+			height: '90px',
+			pointerEvents: 'none' as const,
+			zIndex: 10000,
+			transition: 'all 1.5s cubic-bezier(0.45, 0.05, 0.55, 0.95)',
+		}
+
+		switch(phase) {
+			case 0: case 1: case 2:
+				return { ...baseStyle, right: '0vw', top: '50%', transform: 'translateY(-50%)', opacity: 0 }
+			case 3:
+				return { ...baseStyle, right: '40px', top: '45%', transform: 'translateY(-1%) rotate(2deg)', opacity: 1 }
+			case 4:
+				return { ...baseStyle, right: '45px', top: '47%', transform: 'translateY(-10%) rotate(-3deg) scale(1.02)', opacity: 1 }
+			case 5:
+				return { ...baseStyle, right: '42px', top: '49%', transform: 'translateY(-10%) rotate(1deg) scale(0.98)', opacity: 0 }
+			case 6:
+				return { ...baseStyle, right: '-120px', top: '48%', transform: 'translateY(-50%) rotate(-8deg)', opacity: 0 }
+			default:
+				return baseStyle
+		}
+	}
+
+	const getStarStyle = () => {
+		const phase = Math.min(Math.floor((time + 0.9) / 60 * 5), 6)
+		const baseStyle = {
+			position: 'fixed' as const,
+			width: '65px',
+			height: '65px',
+			pointerEvents: 'none' as const,
+			zIndex: 10000,
+			transition: 'all 1.5s cubic-bezier(0.45, 0.05, 0.55, 0.95)',
+		}
+
+		switch(phase) {
+			case 0: case 1: case 2:
+				return { ...baseStyle, right: '0vw', top: '55%', transform: 'translateY(-50%)', opacity: 0 }
+			case 3:
+				return { ...baseStyle, right: '20px', top: '50%', transform: 'translateY(-1%) rotate(4deg)', opacity: 1 }
+			case 4:
+				return { ...baseStyle, right: '25px', top: '52%', transform: 'translateY(-10%) rotate(-5deg) scale(1.04)', opacity: 1 }
+			case 5:
+				return { ...baseStyle, right: '22px', top: '54%', transform: 'translateY(-10%) rotate(2deg) scale(0.96)', opacity: 0 }
+			case 6:
+				return { ...baseStyle, right: '-120px', top: '53%', transform: 'translateY(-50%) rotate(-10deg)', opacity: 0 }
+			default:
+				return baseStyle
+		}
+	}
+
 	return (
 		<>
 			{shapes.map((shape, index) => (
@@ -136,6 +191,8 @@ export default function PlayfulShapes() {
 				/>
 			))}
 			<img src="/assets/circle.png" alt="playful circle" style={getRightCircleStyle()} />
+			<img src="/assets/cloud.png" alt="playful cloud" style={getCloudStyle()} />
+			<img src="/assets/star.png" alt="playful star" style={getStarStyle()} />
 		</>
 	)
 }

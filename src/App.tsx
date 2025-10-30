@@ -22,11 +22,11 @@ function App() {
 			</p>
 
 			<p>
-				Hit-testing is a problem that spans multiple domains.
+			This particular problem is called hit-testing, and it spans multiple domains
 			</p>
 
 			<p>
-				In a canvas application, getting hit-testing right is important.
+			In a canvas application, getting hit-testing right is important. In tldraw, the hit-testing mechanism has had a few exciting updates over time. We’ll explore that journey in this post.
 			</p>
 
 			<h3>Hit-testing in the browser</h3>
@@ -34,8 +34,7 @@ function App() {
 			<p>
 			For an application on the web, hit-testing is the process of figuring out which element on a page is under the pointer.
 			Browsers use a “pointer events” API to do this. A pointer is a point of contact made on the screen with an input device,
-			like a stylus, or mouse input. Pointer events in the browser can distinguish between things like types of input device,
-			and tilt, twist and pressure of the input signal.
+			like a stylus, or mouse input. Pointer events in the browser can distinguish between things like the tilt, twist and pressure of the input signal.
 			</p>
 
 			<p>
