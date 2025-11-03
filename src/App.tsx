@@ -2,6 +2,7 @@ import RainbowCursors from './RainbowCursors'
 import PlayfulShapes from './PlayfulShapes'
 import DebugGeometry from './DebugGeometry'
 import ClipCorner from './ClipCorner'
+import PointInPolygon from './PointInPolygon'
 
 function App() {
 	return (
@@ -22,47 +23,57 @@ function App() {
 			</p>
 
 			<p>
-			This particular problem is called hit-testing, and it spans multiple domains
+			This particular problem is called hit-testing, and it appears when building an app with any form of graphical user interface.
+			In a canvas application like tldraw, getting hit-testing right is important: it determines the precision and response to user
+			interactions, as well as the app’s performance under the hood. 
 			</p>
 
 			<p>
-			In a canvas application, getting hit-testing right is important. In tldraw, the hit-testing mechanism has changed quite a bit over time. We’ll explore that journey in this post.
+			tldraw’s hit-testing mechanism has changed
+			quite a bit over time. We’ll explore that journey in this post.
 			</p>
 
 			<h3>Hit-testing in the browser</h3>
 
 			<p>
-			For an application on the web, hit-testing is the process of figuring out which element on a page is under the pointer.
-			Browsers use a “pointer events” API to do this. A pointer is a point of contact made on the screen with an input device,
+			For an application on the web, hit-testing is the process of figuring out which element on a page is under the pointer. A pointer is a point of contact made on the screen with an input device,
 			like a stylus, or mouse input. Pointer events in the browser can distinguish between things like the tilt, twist and pressure of the input signal.
 			</p>
 
 			<p>
-			Browsers render web pages in a series of steps. Initially, the browser parses the HTML file and converts its objects
-			into elements in the DOM. It does the same thing for the styles by parsing CSS files. Nodes that will actually be visible
-			on the page get added to a render tree (this excludes metadata and invisible objects). The browser then computes the
-			geometry and layout for rendered elements. The final stages are painting and composition, where each node in the render
+			Browsers render web pages in a series of steps. Initially, the browser parses the HTML file and adds its elements to the DOM.
+			It does the same thing for the styles by parsing CSS files. Nodes that will actually be visible
+			on the page get added to a render tree. The browser then computes the geometry and layout for rendered elements.
+			The final stages are painting and composition, where each node in the render
 			tree is converted into pixels on the screen, with the correct dimensions and ordering.
 			</p>
 
 			<p>
 			Pointer events target the topmost element under the cursor by working backwards through the rendering layers and
-			figuring out which element is highest in the stacking order. The last few rendering layers provide the data for overflow,
-			clipping, visibility and z-index transforms.
-			</p>
-
-			<p>
-			For regular HTML elements like divs, buttons and links, the browser hit-tests against the entire content or border box,
-			so the whole visual area responds to clicks. There are also ways of going around this. For example, clipped regions don’t
-			register pointer events. Below is an example... 
+			figuring out which element is highest in the stacking order. For regular HTML elements like divs, buttons and links,
+			the browser hit-tests against the entire border box, so the whole visual area responds to clicks.
+			Though there are ways of going around this. For example, clipped regions don’t register pointer events.
+			Below is an example... 
 			</p>
 
 			{/* <div style={{ margin: '40px 0', position: 'relative' }}>
 				<ClipCorner />
 			</div> */}
 
+			<h3>Hit-testing in old tldraw</h3>
+
+			<p>
+			In tldraw, objects on the canvas are elements in the DOM. This makes it possible to use the browser’s in-built
+			functionality to hit-test objects on the canvas—which is great, because this obviates the need for more complex
+			algorithmic approaches.
+			</p>
+
+			<p>
+			In fact, in tldraw v1, hit-testing happens entirely through DOM-based pointer events.
+			</p>
+
 			<h3>
-				Hit-testing in the current implementation
+				Hit-testing in current tldraw
 			</h3>
 
 			<p>
@@ -89,7 +100,8 @@ function App() {
 			<b>Goldenrod lines</b> illustrate the distance to the nearest point on the shape's outline when the cursor is <i>inside</i> the shape (within 150px).
 			</p>
 
-		</div>
+		<h2>The Algorithm</h2>
+	</div>
 	)
 }
 
