@@ -19,3 +19,12 @@ html {
 	font-size: 42px;
 	margin-top: 18px;
 }
+
+pre {
+	padding: 20px;
+	border-radius: 8px;
+}
+
+code {
+	font-family: 'Geist Mono', monospace !important;
+}

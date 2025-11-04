@@ -3,8 +3,16 @@ import PlayfulShapes from './PlayfulShapes'
 import DebugGeometry from './DebugGeometry'
 import ClipCorner from './ClipCorner'
 import PointInPolygon from './PointInPolygon'
+import { useEffect } from 'react'
+import Prism from 'prismjs'
+import 'prismjs/themes/prism.css'
+import 'prismjs/components/prism-typescript'
 
 function App() {
+	useEffect(() => {
+		Prism.highlightAll()
+	}, [])
+
 	return (
 		<div style={{ maxWidth: '700px', margin: '0 auto', padding: '20px', marginTop: '50px' }}>
 			<PlayfulShapes />
@@ -63,14 +71,20 @@ function App() {
 			<h3>Hit-testing in old tldraw</h3>
 
 			<p>
-			In tldraw, objects on the canvas are elements in the DOM. This makes it possible to use the browser’s in-built
-			functionality to hit-test objects on the canvas—which is great, because this obviates the need for more complex
-			algorithmic approaches.
+			In tldraw, objects on the canvas are elements in the DOM. This makes it possible to use the browser’s in-built functionality to hit-test objects on the canvas. In fact, in the first version of tldraw, hit-testing happened entirely through DOM-based pointer events. 
 			</p>
 
 			<p>
-			In fact, in tldraw v1, hit-testing happens entirely through DOM-based pointer events.
+			In tldraw v1, shapes were simple data objects…
 			</p>
+
+		<pre><code className="language-typescript">{`export interface RectangleShape extends TDBaseShape {
+  type: TDShapeType.Rectangle
+  size: number[]
+  label?: string
+  labelPoint?: number[]
+}`}</code></pre>
+
 
 			<h3>
 				Hit-testing in current tldraw
