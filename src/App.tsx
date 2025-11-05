@@ -38,7 +38,7 @@ function App() {
 
 			<p>
 			tldraw’s hit-testing mechanism has changed
-			quite a bit over time. We’ll explore that journey in this post.
+			quite a bit over time. We’ll explore that journey in this article.
 			</p>
 
 			<h3>Hit-testing in the browser</h3>
@@ -85,6 +85,41 @@ function App() {
   labelPoint?: number[]
 }`}</code></pre>
 
+			<p>
+			Which allowed for direct React → DOM rendering of geometric shapes.
+			</p>
+
+		<pre><code className='language-typescript'>
+{`export const BoxComponent = TLShapeUtil.Component<BoxShape, SVGSVGElement>(
+  ({ shape, events, isGhost, meta }, ref) => {
+    const color = meta.isDarkMode ? 'white' : 'black'
+
+    return (
+      <SVGContainer ref={ref} {...events}>
+        <rect
+          width={shape.size[0]}
+          height={shape.size[1]}
+          stroke={color}
+          strokeWidth={3}
+          strokeLinejoin="round"
+          fill="none"
+          rx={4}
+          opacity={isGhost ? 0.3 : 1}
+          pointerEvents="all"
+        />
+      </SVGContainer>
+    )
+  }
+)`}
+</code></pre>
+
+			<p>
+			Each geometric shape rendered with <i>three</i> SVG layers. 
+			</p>
+
+			<p>
+			The first, topmost layer was the invisible hit path. The hit path had a stroke-width larger than the path of the shape itself to grab shapes easily. The second layer was an optional fill path. And the third, bottommost layer was the visible stroke path.
+			</p>
 
 			<h3>
 				Hit-testing in current tldraw
@@ -115,6 +150,40 @@ function App() {
 			</p>
 
 		<h2>The Algorithm</h2>
+
+			<p>
+			First, we do a check to see the ordering of shapes on the page. The hit-testing operates topmost first, going backwards through the list of shapes sorted by z-index.
+			</p>
+
+			<pre><code className='language-typescript'>
+		{`const shapesToCheck = (
+	opts.renderingOnly
+		? this.getCurrentPageRenderingShapesSorted()
+		: this.getCurrentPageShapesSorted()
+).filter((shape) => {
+	if (
+		(shape.isLocked && !hitLocked) ||
+		this.isShapeHidden(shape) ||
+		this.isShapeOfType(shape, 'group')
+	)
+		return false
+	const pageMask = this.getShapeMask(shape)
+	if (pageMask && !pointInPolygon(point, pageMask)) return false
+	if (filter && !filter(shape)) return false
+	return true
+})
+`}
+</code></pre>
+
+			<p>winding number algorithm:</p>
+
+			<div style={{ height: '600px', margin: '40px 0', position: 'relative' }}>
+				<PointInPolygon />
+			</div>
+
+
+
+
 	</div>
 	)
 }
