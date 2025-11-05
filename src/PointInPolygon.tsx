@@ -95,8 +95,8 @@ export default function PointInPolygon() {
             },
           })
 
-          // Update intersection points visualization
-          if (intersections.length > 0) {
+          // Update intersection points visualization - only show when inside
+          if (intersections.length > 0 && inside) {
             // Just show the first intersection point for clarity
             const intersection = intersections[0]
             editorRef.current.updateShape({
@@ -104,6 +104,22 @@ export default function PointInPolygon() {
               type: 'geo',
               x: intersection.x - 5,
               y: intersection.y - 5,
+              props: {
+                geo: 'ellipse',
+                w: 10,
+                h: 10,
+                color: 'red',
+                fill: 'solid',
+                size: 's',
+              },
+            })
+          } else {
+            // Hide intersection point when outside
+            editorRef.current.updateShape({
+              id: intersectionShapeId,
+              type: 'geo',
+              x: -10000,
+              y: -10000,
               props: {
                 geo: 'ellipse',
                 w: 10,
@@ -255,7 +271,7 @@ export default function PointInPolygon() {
             })
 
             // Zoom to fit the circle
-            editor.zoomToFit({ animation: { duration: 0 } })
+            editor.zoomToSelection({ animation: { duration: 0 } })
           }}
         />
       </div>
