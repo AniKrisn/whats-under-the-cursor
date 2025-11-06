@@ -178,16 +178,41 @@ if (pageMask && !pointInPolygon(point, pageMask)) return false
 			</div>
 
 			<p>
-			A preliminary check is used for labels. If the click is inside any label's bounds, return that shape immediately. This gives priority to label hits for easier text editing.
+			Next, a preliminary check for labels. If the point is inside a label's bounds, return that shape immediately. This gives priority to label hits for easier text editing. It also ensures that selection works on frame headers.
 			</p>
 
-			<p>
-			What happens if we hit a frame? If we hit its margin, then we select the frame itself. If we hit the frame’s blank space, we need to make sure we can hit the shapes inside. 
-			</p>
+			<pre><code className='language-typescript'>
 
+{`if (
+  this.isShapeOfType<TLFrameShape>(shape, 'frame') ||
+  ((this.isShapeOfType<TLNoteShape>(shape, 'note') ||
+    this.isShapeOfType<TLArrowShape>(shape, 'arrow') ||
+    (this.isShapeOfType<TLGeoShape>(shape, 'geo') && shape.props.fill === 'none')) &&
+    this.getShapeUtil(shape).getText(shape)?.trim())
+) {
+  for (const childGeometry of (geometry as Group2d).children) {
+    if (childGeometry.isLabel && childGeometry.isPointInBounds(pointInShapeSpace)) {
+      return shape
+    }
+  }
+}`}
+
+</code></pre>
+
+						<p>
+						What happens if we hit a frame? If we hit its margin, then we select the frame itself. If we hit the frame’s blank space, we need to make sure we can hit the shapes inside. 
+						</p>
+
+						<p></p>
+
+						<p>
+						Shapes partially outside the frame are clipped, and this happens in the shapesToCheck section at the top. Only masked bounds are used for hit-testing, so only the visible portion of the shape in the frame can be hit-tested. 
+						</p>
 
 	</div>
 	)
 }
 
 export default App
+
+

@@ -22,41 +22,68 @@ const RAINBOW_COLORS: TLDefaultColorStyle[] = [
 ]
 
 export default function RainbowCursors() {
-	const [cursorPositions, setCursorPositions] = useState(() => {
-		const centerX = window.innerWidth / 2 
-		const centerY = window.innerHeight / 2 + 80
-		const radius = 250
-		return Array.from({ length: NUM_CURSORS }, (_, i) => {
-			const angle = (i / NUM_CURSORS) * Math.PI * 1.3
-			return {
-				x: centerX + Math.cos(angle) * radius,
-				y: centerY + Math.sin(angle) * radius
-			}
-		})
-	})
+	const [cursorPositions, setCursorPositions] = useState<Array<{x: number, y: number}>>([])
+	const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
 	const [isMouseInCanvas, setIsMouseInCanvas] = useState(false)
 	const [isFadingOut, setIsFadingOut] = useState(false)
-	const mousePosition = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
+	const mousePosition = useRef({ x: 0, y: 0 })
 	const animationFrameId = useRef<number>()
 	const editorRef = useRef<Editor | null>(null)
 	const shapeIdsRef = useRef<TLShapeId[]>([])
 	const containerRef = useRef<HTMLDivElement>(null)
 
+	// Initialize cursor positions based on canvas size
+	useEffect(() => {
+		if (canvasSize.width > 0 && canvasSize.height > 0 && cursorPositions.length === 0) {
+			const centerX = canvasSize.width / 2
+			const centerY = canvasSize.height / 2
+			const radius = 250
+			setCursorPositions(
+				Array.from({ length: NUM_CURSORS }, (_, i) => {
+					const angle = (i / NUM_CURSORS) * Math.PI * 3
+					return {
+						x: centerX + Math.cos(angle) * radius,
+						y: centerY + Math.sin(angle) * radius
+					}
+				})
+			)
+		}
+	}, [canvasSize, cursorPositions.length])
+
 	useEffect(() => {
 		const handleMouseMove = (e: MouseEvent) => {
-			mousePosition.current = { x: e.clientX, y: e.clientY }
+			if (containerRef.current) {
+				const rect = containerRef.current.getBoundingClientRect()
+				mousePosition.current = { 
+					x: e.clientX - rect.left, 
+					y: e.clientY - rect.top 
+				}
+			}
 		}
 		
 		// Prevent tldraw from capturing scroll events - capture the event first
 		const handleWheel = (e: WheelEvent) => {
 			e.stopPropagation()
 		}
+
+		const handleResize = () => {
+			if (containerRef.current) {
+				setCanvasSize({
+					width: containerRef.current.offsetWidth,
+					height: containerRef.current.offsetHeight
+				})
+			}
+		}
 		
 		const container = containerRef.current
 		if (container) {
 			// Use capture phase to intercept before tldraw
 			container.addEventListener('wheel', handleWheel, { capture: true })
+			// Set initial size
+			handleResize()
 		}
+
+		window.addEventListener('resize', handleResize)
 
 		const animate = () => {
 			// Only update positions if mouse is in canvas
@@ -74,7 +101,7 @@ export default function RainbowCursors() {
 						
 						// Each cursor has progressively more lag
 						const baseLerp = 0.075
-						const lerp = baseLerp * (1 - i * 0.1) // Each subsequent cursor is slower
+						const lerp = baseLerp * (1 - 0.000001 * i)
 						
 						newPositions[i] = {
 							x: current.x + dx * lerp,
@@ -84,6 +111,7 @@ export default function RainbowCursors() {
 
 					// Check collision with all shapes
 					if (editorRef.current && shapeIdsRef.current.length > 0) {
+						const containerRect = containerRef.current?.getBoundingClientRect()
 						shapeIdsRef.current.forEach(shapeId => {
 							const shape = editorRef.current!.getShape(shapeId)
 							if (shape && shape.type === 'geo') {
@@ -93,8 +121,8 @@ export default function RainbowCursors() {
 									
 									// Check real mouse position
 									const realMousePagePoint = editorRef.current!.screenToPage({ 
-										x: mousePosition.current.x, 
-										y: mousePosition.current.y 
+										x: mousePosition.current.x + (containerRect?.left || 0), 
+										y: mousePosition.current.y + (containerRect?.top || 0)
 									})
 									
 									const realMouseInside = 
@@ -109,8 +137,8 @@ export default function RainbowCursors() {
 										// Check all cursor images
 										for (let i = 0; i < NUM_CURSORS; i++) {
 											const pagePoint = editorRef.current!.screenToPage({ 
-												x: newPositions[i].x, 
-												y: newPositions[i].y 
+												x: newPositions[i].x + (containerRect?.left || 0), 
+												y: newPositions[i].y + (containerRect?.top || 0)
 											})
 											
 											const isInside = 
@@ -175,6 +203,7 @@ export default function RainbowCursors() {
 		
 		return () => {
 			window.removeEventListener('mousemove', handleMouseMove)
+			window.removeEventListener('resize', handleResize)
 			if (container) {
 				container.removeEventListener('wheel', handleWheel, { capture: true })
 			}
@@ -234,14 +263,6 @@ export default function RainbowCursors() {
 					shapeIdsRef.current = shapeIds
 
                     editor.zoomToFit()
-					// // Position camera to align grid to the left
-					// const gridHeight = GRID_ROWS * SHAPE_SPACING
-					// const viewportBounds = editor.getViewportPageBounds()
-					
-					// // Calculate zoom to fit height
-					// const heightZoom = viewportBounds.height / (gridHeight + 100) // Add padding
-					// editor.setCamera({ x: 0, y: -(gridHeight / 2 + startY - viewportBounds.height / 2), z: heightZoom })
-					// editor.setCameraOptions({ isLocked: true })
 				}}
 			/>
 			{shouldShowCursors && cursorPositions.map((pos, index) => (
@@ -250,7 +271,7 @@ export default function RainbowCursors() {
 					src="/assets/mac-cursor-6.png"
 					alt={`cursor-${index}`}
 					style={{
-						position: 'fixed',
+						position: 'absolute',
 						left: pos.x,
 						top: pos.y,
 						width: '14px',
