@@ -3,6 +3,7 @@ import PlayfulShapes from './PlayfulShapes'
 import DebugGeometry from './DebugGeometry'
 import ClipCorner from './ClipCorner'
 import PointInPolygon from './PointInPolygon'
+import HitTestLayers from './HitTestLayers'
 import { useEffect } from 'react'
 import Prism from 'prismjs'
 import 'prismjs/themes/prism.css'
@@ -105,13 +106,17 @@ function App() {
 			Each geometric shape rendered with <i>three</i> SVG layers. 
 			</p>
 
-			<p>
-			The first, topmost layer was the invisible hit path. The hit path had a stroke-width larger than the path of the shape itself to grab shapes easily. The second layer was an optional fill path. And the third, bottommost layer was the visible stroke path.
-			</p>
+		<p>
+		The first, topmost layer was the invisible hit path. The hit path had a stroke-width larger than the path of the shape itself to grab shapes easily. The second layer was an optional fill path. And the third, bottommost layer was the visible stroke path.
+		</p>
 
-			<h3>
-				Hit-testing in current tldraw
-			</h3>
+		<div style={{ height: '600px', margin: '40px 0', position: 'relative' }}>
+			<HitTestLayers />
+		</div>
+
+		<h3>
+			Hit-testing in current tldraw
+		</h3>
 
 			<p>
 				This also made it possible to build a geometry debugging mode...
