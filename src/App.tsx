@@ -31,14 +31,11 @@ function App() {
 			</p>
 
 			<p>
-			This particular problem is called hit-testing, and it appears when building an app with any form of graphical user interface.
-			In a canvas application like tldraw, getting hit-testing right is important: it determines the precision and response to user
-			interactions, as well as the app’s performance under the hood. 
+			This particular problem is called hit-testing, and it appears when building an app with any form of GUI. In a canvas application like tldraw, getting hit-testing right is important: it determines the precision and quality of response to user interactions, as well as the app's performance under the hood.
 			</p>
 
 			<p>
-			tldraw’s hit-testing mechanism has changed
-			quite a bit over time. We’ll explore that journey in this article.
+			Collision detection (e.g. in 2D and 3D simulations) is a related area of research; it is full of interesting problems—and solutions involving complex math. Luckily, the browser’s in-built hit-testing infrastructure makes it possible to offload some of this work. Despite this, tldraw’s hit-testing mechanism has evolved quite a bit over time. We’ll explore that journey in this post.
 			</p>
 
 			<h3>Hit-testing in the browser</h3>
@@ -71,11 +68,11 @@ function App() {
 			<h3>Hit-testing in old tldraw</h3>
 
 			<p>
-			In tldraw, objects on the canvas are elements in the DOM. This makes it possible to use the browser’s in-built functionality to hit-test objects on the canvas. In fact, in the first version of tldraw, hit-testing happened entirely through DOM-based pointer events. 
+			In tldraw, objects on the canvas are elements in the DOM. This makes it possible to use the browser’s in-built functionality to hit-test objects on the canvas. In fact, in the first version of tldraw, hit-testing happened almost entirely through DOM-based pointer events. 
 			</p>
 
 			<p>
-			In tldraw v1, shapes were simple data objects…
+			In tldraw v1, shapes were simple data objects:
 			</p>
 
 		<pre><code className="language-typescript">{`export interface RectangleShape extends TDBaseShape {
@@ -86,25 +83,16 @@ function App() {
 }`}</code></pre>
 
 			<p>
-			Which allowed for direct React → DOM rendering of geometric shapes.
+			Which allowed for direct React → DOM rendering of geometric shapes:
 			</p>
 
 		<pre><code className='language-typescript'>
 {`export const BoxComponent = TLShapeUtil.Component<BoxShape, SVGSVGElement>(
   ({ shape, events, isGhost, meta }, ref) => {
-    const color = meta.isDarkMode ? 'white' : 'black'
-
     return (
       <SVGContainer ref={ref} {...events}>
         <rect
-          width={shape.size[0]}
-          height={shape.size[1]}
-          stroke={color}
-          strokeWidth={3}
-          strokeLinejoin="round"
-          fill="none"
-          rx={4}
-          opacity={isGhost ? 0.3 : 1}
+          ...
           pointerEvents="all"
         />
       </SVGContainer>
@@ -134,22 +122,14 @@ function App() {
 			</div>
 
 			<p>
-			<b>Red lines</b> trace (1) the shape's perimeter and (2) the bounding box inside the polygon.
+			<span style={{ color: '#ff0000' }}>Red</span> lines trace the shape's perimeter and the bounding box inside the polygon. <span style={{ color: '#00ff00' }}>Green</span><span style={{ color: '#00e680' }}>/</span><span style={{ color: '#00ccff' }}>blue</span> dots illustrate the the vertices of the shape (green first, blue last). <span style={{ color: '#1e90ff' }}>Dodger blue</span> lines illustrate the distance to the nearest point on the shape's outline when the cursor is <i>outside</i> the shape—and <span style={{ color: '#daa520' }}>goldenrod</span> lines illustrate the distance to the nearest point when the cursor is <i>inside</i> (within 150px).
 			</p>
 
 			<p>
-			<b>Green-Blue dots</b> illustrate the the vertices of the shape. These are the points that define the geometrical bounds, with color indicating their ordering (green first, blue last).
+			Now let’s look at the hit-testing algorithm itself.
 			</p>
 
-			<p>
-			<b>Dodger Blue lines</b> illustrate the distance to the nearest point on the shape's outline when the cursor is <i>outside</i> the shape (within 150px).
-			</p>
-
-			<p>
-			<b>Goldenrod lines</b> illustrate the distance to the nearest point on the shape's outline when the cursor is <i>inside</i> the shape (within 150px).
-			</p>
-
-		<h2>The Algorithm</h2>
+		<h3>The Algorithm</h3>
 
 			<p>
 			First, we do a check to see the ordering of shapes on the page. The hit-testing operates topmost first, going backwards through the list of shapes sorted by z-index.
@@ -175,13 +155,35 @@ function App() {
 `}
 </code></pre>
 
-			<p>winding number algorithm:</p>
+			<p>
+			This check is part of the broad-phase initial search to rule out obvious non-contenders, like locked and hidden shapes. It’s worth zooming into these lines in particular:
+			</p>
+
+			<pre><code className='language-typescript'>
+		{`const pageMask = this.getShapeMask(shape)
+if (pageMask && !pointInPolygon(point, pageMask)) return false
+`}
+</code></pre>
+
+			<p>
+			<code>getShapeMask</code> returns an array of points that define a polygon mask for a shape. The mask represents the clipping region applied to a shape when it’s a child of a container (like a frame). 
+			</p>
+
+			<p>
+			<code>pointInPolygon</code> is an implementation of the 'winding number algorithm'. This is a technique to find whether a point is within a polygon by computing the ‘winding number’ relative to the point. The winding number is a count of how many times a horizontal ray, shot to the right of the point, intersects the polygon. An odd winding number means the point is inside; an even winding number means the point is outside.
+			</p>
 
 			<div style={{ height: '600px', margin: '40px 0', position: 'relative' }}>
 				<PointInPolygon />
 			</div>
 
+			<p>
+			A preliminary check is used for labels. If the click is inside any label's bounds, return that shape immediately. This gives priority to label hits for easier text editing.
+			</p>
 
+			<p>
+			What happens if we hit a frame? If we hit its margin, then we select the frame itself. If we hit the frame’s blank space, we need to make sure we can hit the shapes inside. 
+			</p>
 
 
 	</div>
